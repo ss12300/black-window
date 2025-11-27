@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Black Window | Pure Black Screen (Not Black Widow)</title>
+    
+    <meta name="description" content="Did Google think you meant 'Black Widow'? You just wanted a Black Window. This is a pure black screen tool for monitor testing, OLED saving, and focus.">
+    <meta name="keywords" content="Black Window, Black Screen, Monitor Test, Black Browser Window, black window not black widow, OLED black test">
+    
+    <meta property="og:title" content="Black Window (Pure Black Screen)">
+    <meta property="og:description" content="Stop searching for the movie. This is the Black Window you were actually looking for.">
+    <meta property="og:type" content="website">
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            overflow: hidden;
+            transition: background-color 0.2s ease;
+            font-family: sans-serif;
+        }
+
+        /* --- SEO 隱藏文本 (給機器人看的，人類看不見) --- */
+        .seo-hidden-content {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+            opacity: 0;
+        }
+
+        /* --- 1. 白色選單按鈕 --- */
+        #menu-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #FFFFFF; /* 純白，最顯眼 */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: none;
+            cursor: pointer;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        #menu-btn:hover {
+            transform: translateX(-50%) scale(1.1);
+            background-color: #f0f0f0;
+        }
+
+        .menu-icon span {
+            display: block;
+            width: 20px;
+            height: 2px;
+            background-color: #000000; /* 黑色線條 */
+            margin: 4px 0;
+            transition: 0.3s;
+        }
+
+        #menu-btn.is-open .menu-icon span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        #menu-btn.is-open .menu-icon span:nth-child(2) { opacity: 0; }
+        #menu-btn.is-open .menu-icon span:nth-child(3) { transform: rotate(-45deg) translate(4px, -5px); }
+
+        /* --- 2. 調色盤容器 --- */
+        #palette-container {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 25px;
+            background-color: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+        }
+
+        #palette-container.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .color-swatch {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            transition: transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .color-swatch:hover { transform: scale(1.2); }
+
+        /* --- 3. 自訂顏色按鈕 (彩虹) --- */
+        .custom-color-btn {
+            background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+            overflow: hidden;
+        }
+        #custom-color-input {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; cursor: pointer; padding: 0; border: none;
+        }
+
+        /* --- 4. 全螢幕功能按鈕 --- */
+        .separator {
+            width: 1px; height: 30px; background-color: rgba(255,255,255,0.4); margin: 0 5px;
+        }
+        .func-btn {
+            width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+            background-color: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.6);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.2s; color: white; font-size: 20px;
+        }
+        .func-btn:hover { transform: scale(1.1); background-color: rgba(0,0,0,0.8); }
+
+        /* --- UI 顯示邏輯 --- */
+        body.ui-visible #menu-btn { opacity: 1; visibility: visible; }
+        
+        #intro-overlay {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        body.active #intro-overlay { opacity: 0; }
+
+    </style>
+</head>
+<body>
+
+    <div class="seo-hidden-content">
+        <h1>Black Window</h1>
+        <p>You searched for "Black Window", but Google showed you "Black Widow" (the movie)?</p>
+        <p>This website fixes that. It is a simple tool to create a full black window on your browser.</p>
+        <h2>Uses for a Black Window:</h2>
+        <ul>
+            <li>Test monitor for dead pixels.</li>
+            <li>Check for backlight bleeding on LCD screens.</li>
+            <li>Pure black background for OLED energy saving.</li>
+            <li>Screen flashlight (White mode).</li>
+            <li>Focus and productivity background.</li>
+        </ul>
+        <p>Click the button to open the palette and choose other colors or custom hex codes.</p>
+    </div>
+    <div id="intro-overlay">
+        <h1>Black Window</h1>
+        <p>Move mouse to show menu</p>
+    </div>
+
+    <button id="menu-btn" title="Open/Close Palette">
+        <div class="menu-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </button>
+
+    <div id="palette-container">
+        <div class="color-swatch" style="background-color: #FF3B30;" data-color="#FF3B30"></div>
+        <div class="color-swatch" style="background-color: #FF9500;" data-color="#FF9500"></div>
+        <div class="color-swatch" style="background-color: #FFCC00;" data-color="#FFCC00"></div>
+        <div class="color-swatch" style="background-color: #4CD964;" data-color="#4CD964"></div>
+        <div class="color-swatch" style="background-color: #007AFF;" data-color="#007AFF"></div>
+        <div class="color-swatch" style="background-color: #FFFFFF;" data-color="#FFFFFF" title="White / Flashlight"></div>
+        <div class="color-swatch" style="background-color: #000000;" data-color="#000000" title="Black Window"></div>
+
+        <div class="color-swatch custom-color-btn" title="Custom Color">
+            <input type="color" id="custom-color-input">
+        </div>
+
+        <div class="separator"></div>
+
+        <div class="func-btn" id="fullscreen-btn" title="Toggle Fullscreen">⛶</div>
+    </div>
+
+    <script>
+        const body = document.body;
+        const menuBtn = document.getElementById('menu-btn');
+        const paletteContainer = document.getElementById('palette-container');
+        const swatches = document.querySelectorAll('.color-swatch:not(.custom-color-btn)');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const customColorInput = document.getElementById('custom-color-input');
+        
+        let hideTimeout;
+        let isFirstMove = true;
+
+        function handleMouseMove() {
+            if (isFirstMove) {
+                body.classList.add('active');
+                isFirstMove = false;
+            }
+            body.classList.add('ui-visible');
+            clearTimeout(hideTimeout);
+            hideTimeout = setTimeout(() => {
+                body.classList.remove('ui-visible');
+                closePalette();
+            }, 4000); 
+        }
+
+        function togglePalette() {
+            if (paletteContainer.classList.contains('active')) closePalette();
+            else openPalette();
+        }
+        function openPalette() {
+            paletteContainer.classList.add('active');
+            menuBtn.classList.add('is-open');
+        }
+        function closePalette() {
+            paletteContainer.classList.remove('active');
+            menuBtn.classList.remove('is-open');
+        }
+
+        swatches.forEach(swatch => {
+            swatch.addEventListener('click', function(e) {
+                e.stopPropagation(); 
+                body.style.backgroundColor = this.getAttribute('data-color');
+            });
+        });
+
+        customColorInput.addEventListener('click', (e) => e.stopPropagation());
+        customColorInput.addEventListener('input', (e) => body.style.backgroundColor = e.target.value);
+
+        fullscreenBtn.addEventListener('click', function(e){
+            e.stopPropagation();
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        });
+
+        document.addEventListener('mousemove', handleMouseMove);
+        
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            togglePalette();
+            clearTimeout(hideTimeout);
+            hideTimeout = setTimeout(() => {
+                body.classList.remove('ui-visible');
+                closePalette();
+            }, 4000);
+        });
+    </script>
+</body>
+</html>
